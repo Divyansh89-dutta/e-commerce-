@@ -1,16 +1,22 @@
 const mongoose = require('mongoose');
-const {schema} = mongoose;
+const { Schema } = mongoose; // Corrected capitalization
 
-const blacklistedSchema = new Schema({
-    token:{
-        type:String,
-        required:true
-    }
-},
- {timestamps: true})
+// Define the schema for blacklisted tokens
+const blacklistedSchema = new Schema(
+    {
+        token: {
+            type: String,
+            required: true,
+            unique: true, // Ensure tokens are unique
+        },
+    },
+    { timestamps: true } // Automatically add createdAt and updatedAt fields
+);
 
-blacklistedSchema.index({token: 1}, {unique: true});
+// Add an index to ensure uniqueness for the token
+blacklistedSchema.index({ token: 1 }, { unique: true });
 
-const blacklisted = mongoose.models("backlist", blacklistedSchema);
+// Create or retrieve the model
+const Blacklisted = mongoose.model('Blacklisted', blacklistedSchema); // Corrected model creation syntax
 
-module.exports = blacklisted;
+module.exports = Blacklisted;
