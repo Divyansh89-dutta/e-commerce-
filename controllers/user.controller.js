@@ -15,20 +15,26 @@ module.exports.signup = async (req, res, next) => {
 
         // Validate required fields
         if (!email || !password || !username) {
-            return errorResponse(res, 400, 'All fields are required');
+            return res.status(401).json({
+                success: false,
+                message: 'All fields are required',
+            });
         }
 
         // Check if user already exists
         const existingUser = await userModel.findOne({ email });
         if (existingUser) {
-            return errorResponse(res, 400, 'Email already exists');
+            return res.status(401).json({
+                success: false,
+                message: 'Email already exists',
+            });
         }
 
         // Hash password securely
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create new user
-        const user = new userModel({
+        const user = await userModel({
             email,
             password: hashedPassword,
             username,
@@ -53,7 +59,10 @@ module.exports.signin = async (req, res, next) => {
 
         // Validate required fields
         if (!email || !password) {
-            return errorResponse(res, 400, 'All fields are required');
+            return res.status(403).json({
+                success: false,
+                message: 'All fields are required',
+            });
         }
 
         // Check if user exists
@@ -81,26 +90,43 @@ module.exports.signin = async (req, res, next) => {
 // Logout Controller
 module.exports.logout = async (req, res, next) => {
     try {
-        const token = req.header('Authorization')?.replace('Bearer ', '');
+        const token = req.headers.authorization.split(" ")[1];
 
         // Validate token existence
         if (!token) {
-            return errorResponse(res, 401, 'No token provided');
+            return res.status(400).json({
+                message: "Token is required"
+            });
         }
 
         // Check if the token is already blacklisted
         const isTokenBlacklisted = await blacklistedTokensModel.findOne({ token });
         if (isTokenBlacklisted) {
-            return errorResponse(res, 401, 'Token already blacklisted');
+            return res.status(400).json({
+                message: "Token is already blacklisted"
+            });
         }
 
         // Blacklist the token
-        const blacklistedToken = new blacklistedTokensModel({ token });
-        await blacklistedToken.save();
+        await blacklistedToken.create({ token });
 
         return res.status(200).json({ success: true, message: 'Logged out successfully' });
     } catch (error) {
         console.error(error);
         return errorResponse(res, 500, 'Internal server error');
     }
+};
+
+module.exports.getProfile = async (req, res, next) => {
+    try{
+        const user = await userModel.findById(req.user._id);
+       res.status(200).json({
+        success: true,
+        user
+        });
+    }
+    catch(error){
+        console.error(error);
+        return errorResponse(res, 500, 'Server error');
+        }
 };

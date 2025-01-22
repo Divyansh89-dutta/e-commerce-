@@ -1,47 +1,30 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const mongoose = require("mongoose");
 
-// Define the product schema
-const productSchema = new Schema(
-    {
-        name: {
-            type: String,
-            required: true,
-            trim: true, // Removes extra spaces
-            minlength: 3, // Minimum length validation
-            maxlength: 100, // Maximum length validation
-        },
-        description: {
-            type: String,
-            required: true,
-            trim: true,
-            minlength: 10, // Minimum length validation
-            maxlength: 1000, // Maximum length validation
-        },
-        price: {
-            type: Number,
-            required: true,
-            min: 0, // Ensure price is non-negative
-        },
-        images: {
-            type: [String], // Array of image URLs
-            validate: {
-                validator: (images) => images.length > 0, // Ensure at least one image
-                message: 'At least one image is required.',
-            },
-        },
-        seller: {
-            type: Schema.Types.ObjectId,
-            ref: 'User', // Reference to the User model
-            required: true,
-        },
+const Schema = mongoose.Schema;
+
+const productSchema = new Schema({
+    name: {
+        type: String,
+        required: true
     },
-    {
-        timestamps: true, // Automatically adds createdAt and updatedAt fields
+    description: {
+        type: String,
+        required: true
+    },
+    price: {
+        type: Number,
+        required: true
+    },
+    images: [ {
+        type: String,
+    } ],
+    seller: {
+        type: Schema.Types.ObjectId,
+        ref: "user",
+        required: true
     }
-);
+}, { timestamps: true });
 
-// Create the Product model
-const Product = mongoose.model('Product', productSchema);
+const Product = mongoose.model("product", productSchema);
 
 module.exports = Product;
